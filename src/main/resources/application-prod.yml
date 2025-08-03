@@ -1,0 +1,26 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://db.nxhngcimpovjdutttsvz.supabase.co:5432/postgres
+    username: postgres
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      idle-timeout: 30000
+      max-lifetime: 1800000
+      connection-timeout: 30000
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    open-in-view: false
+
+jackson:
+  serialization:
+    indent_output: false
+
+logging:
+  level:
+    org.springframework: INFO
