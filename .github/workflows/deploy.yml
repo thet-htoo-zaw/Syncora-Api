@@ -31,6 +31,15 @@ jobs:
           source: "build/libs/syncora.jar"
           target: "~/syncora-prod"
 
+      - name: 🔍 Verify JAR on server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            ls -l ~/syncora-prod/
+
       - name: 🔁 Restart Spring Boot (systemd)
         uses: appleboy/ssh-action@v1.0.3
         with:
