@@ -7,23 +7,22 @@ on:
 
 jobs:
   deploy:
-    name: Deploy to EC2
     runs-on: ubuntu-latest
 
     steps:
-      - name: 🔄 Checkout code
+      - name: 🔄 Checkout
         uses: actions/checkout@v4
 
-      - name: 🛠️ Setup Java
+      - name: 🛠️ Set up Java
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: 📦 Build project
+      - name: 📦 Build app
         run: ./gradlew clean build
 
-      - name: 📁 Copy build to EC2
+      - name: 📁 Upload JAR to EC2
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.EC2_HOST }}
@@ -32,16 +31,16 @@ jobs:
           source: "build/libs/syncora.jar"
           target: "~/syncora-prod"
 
-      - name: 🚀 Run app on EC2
+      - name: 🔁 Restart Spring Boot (systemd)
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            export JWT_SECRET="${{ secrets.JWT_SECRET }}"
-            export DB_PASSWORD="${{ secrets.DB_PASSWORD }}"
-            cd ~/syncora-prod
-            pkill -f syncora.jar || true
-            nohup java -Dspring.profiles.active=prod -DJWT_SECRET=$JWT_SECRET -DDB_PASSWORD=$DB_PASSWORD -jar syncora.jar > app.log 2>&1 &
-            echo "✅ Application started"
+            sudo systemctl stop syncora.service || true
+            sudo sed -i "s|^Environment=JWT_SECRET=.*|Environment=JWT_SECRET=${{ secrets.JWT_SECRET }}|" /etc/systemd/system/syncora.service
+            sudo sed -i "s|^Environment=DB_PASSWORD=.*|Environment=DB_PASSWORD=${{ secrets.DB_PASSWORD }}|" /etc/systemd/system/syncora.service
+            sudo systemctl daemon-reload
+            sudo systemctl start syncora.service
+            sudo systemctl status syncora.service --no-pager
