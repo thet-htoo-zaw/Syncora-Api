@@ -32,7 +32,14 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           source: "build/libs/syncora.jar"
-          target: "/home/ubuntu/syncora-prod"
+          target: "~/syncora-prod"
+
+      - name: ✅ Check if JAR exists
+        run: |
+          if [ ! -f build/libs/syncora.jar ]; then
+            echo "JAR file not found!"
+            exit 1
+          fi
 
       - name: 🔍 Verify JAR on server
         uses: appleboy/ssh-action@v1.0.3
