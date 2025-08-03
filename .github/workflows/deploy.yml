@@ -38,9 +38,8 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            sudo systemctl stop syncora.service || true
-            sudo sed -i "s|^Environment=JWT_SECRET=.*|Environment=JWT_SECRET=${{ secrets.JWT_SECRET }}|" /etc/systemd/system/syncora.service
-            sudo sed -i "s|^Environment=DB_PASSWORD=.*|Environment=DB_PASSWORD=${{ secrets.DB_PASSWORD }}|" /etc/systemd/system/syncora.service
+            echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" | sudo tee /etc/syncora.env > /dev/null
+            echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" | sudo tee -a /etc/syncora.env > /dev/null
             sudo systemctl daemon-reload
-            sudo systemctl start syncora.service
+            sudo systemctl restart syncora.service
             sudo systemctl status syncora.service --no-pager
