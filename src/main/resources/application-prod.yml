@@ -2,7 +2,7 @@ spring:
   datasource:
     url: jdbc:postgresql://db.nxhngcimpovjdutttsvz.supabase.co:5432/postgres
     username: postgres
-    password: ${DB_PASSWORD}
+    password: Syncora-2025
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 10
