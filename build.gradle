@@ -38,6 +38,10 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
+jar{
+    archiveFileName = 'syncora.jar'
+}
+
 tasks.named('test') {
     useJUnitPlatform()
 }
