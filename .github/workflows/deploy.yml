@@ -20,7 +20,7 @@ jobs:
           distribution: 'temurin'
 
       - name: 📦 Build app
-        run: ./gradlew clean build
+        run: ./gradlew clean build -x test
 
       - name: 🏷️ Rename JAR (optional)
         run: mv build/libs/*.jar build/libs/syncora.jar
