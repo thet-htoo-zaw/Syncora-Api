@@ -41,16 +41,6 @@ jobs:
           source: "build/libs/syncora.jar"
           target: "~/syncora-prod"
 
-      - name : Notify Slack About deployment
-        if: always()
-        uses: rtCamp/action-slack-notify@v2
-        with:
-          webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
-          messages: |
-            🚀 Deployment to *production* branch ${{ github.ref }} by ${{ github.actor }}
-            Status: ${{ job.status }}
-          color: ${{ job.status == 'success' && 'good' || 'danger' }}
-
       - name: 🔁 Restart Spring Boot (systemd)
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -66,3 +56,20 @@ jobs:
             sudo systemctl daemon-reload
             sudo systemctl restart syncora.service
             sudo systemctl status syncora.service --no-pager
+
+      - name: 🔔 Notify Slack About Deployment
+        if: always()
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          payload: |
+            {
+              "text": ":rocket: *Deploy to Production* by _${{ github.actor }}_",
+              "attachments": [
+                {
+                  "color": "${{ job.status == 'success' && '#36a64f' || '#ff0000' }}",
+                  "text": "Status: *${{ job.status }}*\nRepo: `${{ github.repository }}`\nBranch: `${{ github.ref_name }}`"
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SL
