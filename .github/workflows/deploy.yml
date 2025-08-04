@@ -22,15 +22,15 @@ jobs:
       - name: 📦 Build app
         run: ./gradlew clean build -x test
 
-      - name: ✅ Check if JAR exists
+      - name: ✅ Find and rename Spring Boot JAR
         run: |
-          if [ ! -f build/libs/*.jar ]; then
-            echo "JAR file not found!"
+          JAR_PATH=$(find build/libs -type f -name '*SNAPSHOT.jar' | head -n 1)
+          if [ -z "$JAR_PATH" ]; then
+            echo "❌ No JAR file found!"
             exit 1
           fi
-
-      - name: 🏷️ Rename JAR (optional)
-        run: mv build/libs/*.jar build/libs/syncora.jar
+          echo "✅ Found JAR: $JAR_PATH"
+          mv "$JAR_PATH" build/libs/syncora.jar
 
       - name: 📁 Upload JAR to EC2
         uses: appleboy/scp-action@v0.1.7
@@ -57,28 +57,14 @@ jobs:
             sudo systemctl restart syncora.service
             sudo systemctl status syncora.service --no-pager
 
-      - name: 💬 Set Slack color based on status
-        id: set-color
-        run: |
-          if [ "${{ job.status }}" == "success" ]; then
-            echo "color=#36a64f" >> $GITHUB_OUTPUT
-          else
-            echo "color=#ff0000" >> $GITHUB_OUTPUT
-          fi
-
       - name: 🔔 Notify Slack About Deployment
         if: always()
-        uses: slackapi/slack-github-action@v1.24.0
-        with:
-          payload: |
-            {
-              "text": ":rocket: *Deploy to Production* by _${{ github.actor }}_",
-              "attachments": [
-                {
-                  "color": "${{ steps.set-color.outputs.color }}",
-                  "text": "Status: *${{ job.status }}*\nRepo: `${{ github.repository }}`\nBranch: `${{ github.ref_name }}`"
-                }
-              ]
-            }
+        uses: rtCamp/action-slack-notify@v2
         env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_USERNAME: GitHub Actions
+          SLACK_ICON_EMOJI: ':rocket:'
+          SLACK_COLOR: ${{ job.status == 'success' && 'good' || 'danger' }}
+          SLACK_MESSAGE: |
+            🚀 Deployment to *production* by *${{ github.actor }}*
+            Status: *${{ job.status }}*
