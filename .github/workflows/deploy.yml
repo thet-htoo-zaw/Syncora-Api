@@ -52,7 +52,7 @@ jobs:
             echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" | sudo tee /etc/syncora.env > /dev/null
             echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" | sudo tee -a /etc/syncora.env > /dev/null
             sudo chown ubuntu:ubuntu /home/ubuntu/syncora-prod/build/libs/syncora.jar
-            sudo chmod 755 /home/ubuntu/syncora-prod/syncora.jar
+            sudo chmod 755 /home/ubuntu/syncora-prod/build/libs/syncora.jar
             sudo systemctl daemon-reload
             sudo systemctl restart syncora.service
             sudo systemctl status syncora.service --no-pager
